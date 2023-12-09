@@ -28,8 +28,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous (name = "autonthingybluelower", preselectTeleOp = "bradenscode")
-public class autonthingyBlueLower extends LinearOpMode {
+@Autonomous (name = "autonthingyredupper", preselectTeleOp = "bradenscode")
+public class autonthingyBlueLowerPurpleOnly extends LinearOpMode {
     private int armPos, armPosMin, armPosMax;
     private int spikePos;
     private Servo autonServo;
@@ -109,9 +109,11 @@ public class autonthingyBlueLower extends LinearOpMode {
 
         while (!isStarted() && !isStopRequested()) {
             autonServo.setPosition(0.5);
+            scooper.setPosition(0.3);
+
             //autonServo.setPosition(0.9);
 
-            scooper.setPosition(0.3);
+
             telemetry.addLine("Coordinate" + "(" + (int) cX + ", " + (int) cY + ")");
             telemetry.addLine("Distance in Inch" + (getDistance(width)));
 
@@ -122,7 +124,7 @@ public class autonthingyBlueLower extends LinearOpMode {
 
                 telemetry.addLine("Side: Center");
                 side = "center";
-           } else if ((int) cX >= 350) {
+            } else if ((int) cX >= 350) {
 
                 telemetry.addLine("Side: Right");
                 side = "right";
@@ -140,46 +142,39 @@ public class autonthingyBlueLower extends LinearOpMode {
         telemetry.addData("Side", side);
         telemetry.update();
 
-        scooper.setPosition(0.375);
-        setliftpos(150, 0.5);
 
+        setliftpos(150, 0.3);
 
         if (side.equals("left")) {
-            driveForward(100, 100, 0.5);
-            strafeLeft(500, 500, 0.5);
-            driveForward(1050, 1050, 0.5);
-            driveForward(900, -900, 0.5);
 
-            autonServo.setPosition(0.9);
-            sleep(500);
-            autonServo.setPosition(0.5);
+            driveForward(1075, 1075, 0.3);
+            driveForward(-960, 960, 0.3);
+
             //place pixel here
-            driveForward(-2400, -2400, 0.5);
-            strafeLeft(300, 300, 0.5);
-            setliftpos(1275, 0.5);
+            autonServo.setPosition(0.9);
+            sleep(1000);
+            autonServo.setPosition(0.5);
+
         } else if (side.equals("right")) {
-            driveForward(1150, 1150, 0.5);
-            driveForward(900, -900, 0.5);
-            sleep(2000);
-            //place pixel here
+
+
+
+            strafeRight(1200, 1200, 0.3);
+            driveForward(1000, 1000, 0.3);
+            driveForward(-1000, 1000, 0.3);
+
             autonServo.setPosition(0.9);
-            sleep(500);
+            sleep(1000);
             autonServo.setPosition(0.5);
-            driveForward(-2400, -2400, 0.5);
-            strafeRight(300, 300 ,0.5);
-            setliftpos(12, 0.5);
-
-
 
         } else {
-            driveForward(1150, 1150, 0.5);
+            strafeLeft(150, 150, 0.3);
+            driveForward(1400, 1400, 0.3);
             //place pixel here
             autonServo.setPosition(0.9);
-            sleep(500);
+            sleep(1000);
             autonServo.setPosition(0.5);
-            driveForward(900, -900, 0.5);
-            driveForward(-2400, -2400, 0.5);
-            setliftpos(1275, 0.5);
+
         }
 
         // Release resources
@@ -365,8 +360,8 @@ public class autonthingyBlueLower extends LinearOpMode {
             Mat hsvFrame = new Mat();
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
-            Scalar lowerYellow = new Scalar(0, 100, 100);
-            Scalar upperYellow = new Scalar(100, 255, 255);
+            Scalar lowerYellow = new Scalar(100, 100, 100);
+            Scalar upperYellow = new Scalar(180, 255, 255);
 
 
             Mat yellowMask = new Mat();
