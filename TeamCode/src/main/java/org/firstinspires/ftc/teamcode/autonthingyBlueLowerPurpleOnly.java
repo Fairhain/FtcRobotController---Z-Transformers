@@ -28,7 +28,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous (name = "autonthingyredupper", preselectTeleOp = "bradenscode")
+@Autonomous (name = "autonthingybluelower", preselectTeleOp = "bradenscode")
 public class autonthingyBlueLowerPurpleOnly extends LinearOpMode {
     private int armPos, armPosMin, armPosMax;
     private int spikePos;
@@ -154,26 +154,31 @@ public class autonthingyBlueLowerPurpleOnly extends LinearOpMode {
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
+            driveForward(-100, -100, 0.3);
+            setliftpos(0, 0.3);
 
         } else if (side.equals("right")) {
 
+            strafeRight(65,65,0.3);
+            driveForward(850, 850, 0.3);
 
-
-            strafeRight(1200, 1200, 0.3);
-            driveForward(1000, 1000, 0.3);
-            driveForward(-1000, 1000, 0.3);
-
-            autonServo.setPosition(0.9);
-            sleep(1000);
-            autonServo.setPosition(0.5);
-
-        } else {
-            strafeLeft(150, 150, 0.3);
-            driveForward(1400, 1400, 0.3);
             //place pixel here
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
+            driveForward(-100, -100, 0.3);
+            setliftpos(0, 0.3);
+
+        } else {
+            driveForward(1250, 1250, 0.3);
+            strafeLeft(250, 250, 0.3);
+            //place pixel here
+            autonServo.setPosition(0.9);
+            sleep(1000);
+            autonServo.setPosition(0.5);
+            driveForward(-100, -100, 0.3);
+            setliftpos(0, 0.3);
+
 
         }
 
@@ -360,8 +365,8 @@ public class autonthingyBlueLowerPurpleOnly extends LinearOpMode {
             Mat hsvFrame = new Mat();
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
-            Scalar lowerYellow = new Scalar(100, 100, 100);
-            Scalar upperYellow = new Scalar(180, 255, 255);
+            Scalar lowerYellow = new Scalar(0, 100, 100);
+            Scalar upperYellow = new Scalar(100, 255, 255);
 
 
             Mat yellowMask = new Mat();

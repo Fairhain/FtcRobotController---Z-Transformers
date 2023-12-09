@@ -110,9 +110,8 @@ public class    autonthingyBlueUpper extends LinearOpMode {
         while (!isStarted() && !isStopRequested()) {
 
 
-            //autonServo.setPosition(0.9);
-
-            scooper.setPosition(0.4);
+            autonServo.setPosition(0.5);
+            scooper.setPosition(0.3);
             telemetry.addLine("Coordinate" + "(" + (int) cX + ", " + (int) cY + ")");
             telemetry.addLine("Distance in Inch" + (getDistance(width)));
 
@@ -123,7 +122,7 @@ public class    autonthingyBlueUpper extends LinearOpMode {
 
                 telemetry.addLine("Side: Center");
                 side = "center";
-           } else if ((int) cX >= 350) {
+            } else if ((int) cX >= 350) {
 
                 telemetry.addLine("Side: Right");
                 side = "right";
@@ -140,16 +139,15 @@ public class    autonthingyBlueUpper extends LinearOpMode {
         telemetry.update();
         telemetry.addData("Side", side);
         telemetry.update();
-        autonServo.setPosition(0.5);
-        scooper.setPosition(0.3);
-        sleep(100);
+
+
         setliftpos(150, 0.5);
 
 
         if (side.equals("left")) {
-            strafeLeft(1280, 1280, 0.3);
+            strafeLeft(1200, 1200, 0.3);
             driveForward(1700, 1700, 0.3);
-            driveForward(950, -950, 0.3);
+            driveForward(1000, -1000, 0.3);
 
             autonServo.setPosition(0.9);
             sleep(1000);
@@ -159,31 +157,56 @@ public class    autonthingyBlueUpper extends LinearOpMode {
             strafeRight(815, 815, 0.3);
             driveForward(-500,-500, .5);
             setliftpos(1275, 0.2);
-
+            sleep(1000);
+            setliftpos(150, 0.3);
+            driveForward(200, 200, 0.3);
+            strafeRight(1500, 1500, 0.3);
+            driveForward(-500, -500, 0.3);
+            setliftpos(0, 0.3);
         } else if (side.equals("right")) {
-            driveForward(1700, 1700, 0.3);
-            driveForward(950, -950, 0.3);
+            setliftpos(100,0.3);
+            driveForward(1100, 1100, 0.3);
+            strafeRight(150,150,0.3);
 
             //place pixel here
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
-//            driveForward(-1800, -1800, 0.3);
-//            strafeLeft(300, 300 ,0.3);
-//            setliftpos(1200, 0.3);
-
-
+            strafeLeft(500, 500, 0.3);
+            driveForward(900, -900, 0.3);
+            driveForward(-900, -900, 0.3);
+            strafeLeft(400, 400 ,0.3);
+            driveForward(-900, -900, 0.3);
+            setliftpos(1275, 0.3);
+            sleep(1000);
+            setliftpos(150, 0.3);
+            driveForward(100, 100, 0.3);
+            strafeRight(1000, 1000, 0.3);
+            driveForward(-500, -500, 0.3);
+            setliftpos(0, 0.3);
 
         } else {
-            strafeLeft(500, 500, 0.3);
-            driveForward(1300, 1300, 0.3);
+            driveForward(1250, 1250, 0.3);
+            strafeLeft(250, 250, 0.3);
             //place pixel here
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
+
+
             driveForward(900, -900, 0.3);
-//            driveForward(-1000, -1000, 0.3);
-//            setliftpos(1275, 0.3);
+            driveForward(-1000, -1000, 0.3);
+            strafeRight(100, 100, 0.3);
+            driveForward(-1000, -1000, 0.3);
+
+
+            setliftpos(1275, 0.3);
+            sleep(1000);
+            setliftpos(150, 0.3);
+            driveForward(100, 100, 0.3);
+            strafeRight(1500, 1500, 0.3);
+            driveForward(-500, -500, 0.3);
+            setliftpos(0, 0.3);
         }
 
         // Release resources

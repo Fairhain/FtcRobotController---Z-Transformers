@@ -28,7 +28,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous (name = "autonthingyredupper", preselectTeleOp = "bradenscode")
+@Autonomous (name = "autonthingyredlower", preselectTeleOp = "bradenscode")
 public class autonthingyRedLowerPurpleOnly extends LinearOpMode {
     private int armPos, armPosMin, armPosMax;
     private int spikePos;
@@ -145,35 +145,40 @@ public class autonthingyRedLowerPurpleOnly extends LinearOpMode {
 
         setliftpos(150, 0.3);
 
-        if (side.equals("left")) {
-
-            driveForward(1075, 1075, 0.3);
-            driveForward(-960, 960, 0.3);
-
-            //place pixel here
-            autonServo.setPosition(0.9);
-            sleep(1000);
-            autonServo.setPosition(0.5);
-
-        } else if (side.equals("right")) {
-
-
-
-            driveForward(1075, 1075, 0.3);
-            driveForward(960, -960, 0.3);
+        if (side.equals("right")) {
+            setliftpos(100,0.3);
+            driveForward(1100, 1100, 0.3);
+            strafeRight(150,150,0.3);
 
             //place pixel here
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
+            driveForward(-150, -150, 0.3);
+            setliftpos(0, 0.3);
+
+        } else if (side.equals("left")) {
+
+
+            driveForward(1000, 1000, 0.3);
+            driveForward(-1000, 1000, 0.3);
+
+            //place pixel here
+            autonServo.setPosition(0.9);
+            sleep(1000);
+            autonServo.setPosition(0.5);
+            driveForward(-100, -100, 0.3);
+            setliftpos(0, 0.3);
 
         } else {
-            strafeLeft(150, 150, 0.3);
-            driveForward(1400, 1400, 0.3);
+            driveForward(1250, 1250, 0.3);
+            strafeLeft(250, 250, 0.3);
             //place pixel here
             autonServo.setPosition(0.9);
             sleep(1000);
             autonServo.setPosition(0.5);
+            driveForward(-100, -100, 0.3);
+            setliftpos(0, 0.3);
 
         }
 
