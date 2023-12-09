@@ -13,7 +13,7 @@ public class bradenscode extends LinearOpMode {
     private int armLeftPos, slider;
     private int minPosLeft, minPosRight;
     private DcMotor motorArm;
-    private Servo scooper;
+    private Servo scooper, autonServo;
     private Servo droneServo;
     private int claw;
     private boolean clawStatus;
@@ -37,6 +37,7 @@ public class bradenscode extends LinearOpMode {
 
         scooper = hardwareMap.get(Servo.class, "scooper");
         droneServo = hardwareMap.servo.get("droneServo");
+        autonServo = hardwareMap.servo.get("autonServo");
         boolean servoButton = gamepad1.x;
         boolean clawStatus = true;
         boolean ranvar = true;
@@ -66,6 +67,7 @@ public class bradenscode extends LinearOpMode {
         //raises the scoop a bit higher
         scooper.setPosition(0.4);
         droneServo.setPosition(0.55);
+        autonServo.setPosition(0.5);
 
         if (isStopRequested()) return;
 
@@ -73,6 +75,7 @@ public class bradenscode extends LinearOpMode {
 
 
         while (opModeIsActive()) {
+            autonServo.setPosition(0.5);
             telemetry.addData("opmodeisActive",slider);
             double y = -gamepad2.left_stick_y; // Remember, this is reversed!
             double x = gamepad2.left_stick_x * 1.1; // Counteract imperfect strafing
@@ -84,10 +87,10 @@ public class bradenscode extends LinearOpMode {
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y - x - rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
+            double frontLeftPower = (y + x + rx) / denominator/1.5;
+            double backLeftPower = (y - x + rx) / denominator/1.5;
+            double frontRightPower = (y - x - rx) / denominator/1.5;
+            double backRightPower = (y + x - rx) / denominator/1.5;
 
             motorFrontLeft.setPower(frontLeftPower);
             motorBackLeft.setPower(backLeftPower);
@@ -110,6 +113,7 @@ public class bradenscode extends LinearOpMode {
             } else if (gamepad1.b) {
                 scooper.setPosition(0.3); //open left
             }
+
             if (gamepad1.y && slider == 0) {
                 setliftpos(150, 0.3);
                 slider = 1;
@@ -117,7 +121,7 @@ public class bradenscode extends LinearOpMode {
                 telemetry.update();
 
             } else if (gamepad1.y && slider == 1) {
-                setliftpos(1275, 0.15);
+                setliftpos(1275, 0.2);
                 slider = 2;
                 telemetry.addData("slider is 3", slider);
                 telemetry.update();
