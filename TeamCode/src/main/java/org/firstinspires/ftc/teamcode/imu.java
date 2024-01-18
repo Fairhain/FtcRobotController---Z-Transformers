@@ -76,15 +76,7 @@ public class imu extends LinearOpMode {
         double referenceAngle = Math.toRadians(90);
         while (opModeIsActive()) {
 
-
-
-            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-
-            double power = PIDControl(referenceAngle, imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
-            FrontLeft.setPower(-power);
-            BackLeft.setPower(-power);
-            FrontRight.setPower(power);
-            BackRight.setPower(power);
+            turn(referenceAngle);
 
 
             telemetry.addData("Target IMU angle", referenceAngle);
@@ -98,6 +90,15 @@ public class imu extends LinearOpMode {
 
 
     }
+    public void turn(double referenceAngle){
+        double power = PIDControl(referenceAngle, imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
+        FrontLeft.setPower(-power);
+        BackLeft.setPower(-power);
+        FrontRight.setPower(power);
+        BackRight.setPower(power);
+    }
+
+
     public double PIDControl(double reference, double state) {
         double error = angleWrap(reference - state);
         integralSum += error * timer.seconds();
