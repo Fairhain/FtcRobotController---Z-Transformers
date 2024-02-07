@@ -6,8 +6,14 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.MovingStatistics;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
@@ -24,14 +30,25 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
  * accurate track width estimate is important or else the angular constraints will be thrown off.
  */
 @Config
+@Disabled
 @Autonomous(group = "drive")
 public class TrackWidthTuner extends LinearOpMode {
+    private DcMotorEx motorArm;
+    private int armPos, armPosMin, armPosMax;
+    private Servo scooper;
     public static double ANGLE = 180; // deg
     public static int NUM_TRIALS = 5;
     public static int DELAY = 1000; // ms
 
     @Override
     public void runOpMode() throws InterruptedException {
+        armPos = 0;
+        armPosMax = 4260;
+        armPosMin = 0;
+        motorArm = hardwareMap.get(DcMotorEx.class, "motorArm");
+        motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorArm.setDirection(DcMotorSimple.Direction.FORWARD);
+        scooper = hardwareMap.servo.get("scooper");
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -43,7 +60,8 @@ public class TrackWidthTuner extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-
+        scooper.setPosition(0.4);
+        setliftpos(150, 0.3);
         if (isStopRequested()) return;
 
         telemetry.clearAll();
@@ -84,5 +102,23 @@ public class TrackWidthTuner extends LinearOpMode {
         while (!isStopRequested()) {
             idle();
         }
+    }
+    public void setliftpos(int armTarget, double speed) {
+        armPos = armTarget;
+
+        // validate armPos is within Min and Max
+        armPos = Range.clip(armPos, armPosMin, armPosMax);
+
+
+        motorArm.setTargetPosition(armPos);
+
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorArm.setPower(speed);
+        while (opModeIsActive() && motorArm.isBusy()) {
+            idle();
+
+        }
+
     }
 }

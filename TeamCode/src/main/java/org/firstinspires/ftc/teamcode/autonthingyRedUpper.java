@@ -31,7 +31,7 @@ import java.util.List;
 @Autonomous (name = "autonthingyredupper", preselectTeleOp = "bradenscode")
 public class autonthingyRedUpper extends LinearOpMode {
     private int armPos, armPosMin, armPosMax;
-    private int spikePos;
+
     private Servo autonServo;
     private Servo scooper;
     private DcMotor motorFrontLeft;

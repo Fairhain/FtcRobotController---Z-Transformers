@@ -4,7 +4,13 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -25,13 +31,27 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
  * is recommended that you use the FollowerPIDTuner opmode for further fine tuning.
  */
 @Config
+@Disabled
+
 @Autonomous(group = "drive")
 public class BackAndForth extends LinearOpMode {
+    private DcMotorEx motorArm;
+    private int armPos, armPosMin, armPosMax;
+    private Servo scooper;
 
     public static double DISTANCE = 50;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        armPos = 0;
+        armPosMax = 4260;
+        armPosMin = 0;
+        motorArm = hardwareMap.get(DcMotorEx.class, "motorArm");
+        motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorArm.setDirection(DcMotorSimple.Direction.FORWARD);
+        scooper = hardwareMap.servo.get("scooper");
+        scooper.setPosition(0.4);
+        setliftpos(150, 0.3);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Trajectory trajectoryForward = drive.trajectoryBuilder(new Pose2d())
@@ -48,5 +68,23 @@ public class BackAndForth extends LinearOpMode {
             drive.followTrajectory(trajectoryForward);
             drive.followTrajectory(trajectoryBackward);
         }
+    }
+    public void setliftpos(int armTarget, double speed) {
+        armPos = armTarget;
+
+        // validate armPos is within Min and Max
+        armPos = Range.clip(armPos, armPosMin, armPosMax);
+
+
+        motorArm.setTargetPosition(armPos);
+
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorArm.setPower(speed);
+        while (opModeIsActive() && motorArm.isBusy()) {
+            idle();
+
+        }
+
     }
 }

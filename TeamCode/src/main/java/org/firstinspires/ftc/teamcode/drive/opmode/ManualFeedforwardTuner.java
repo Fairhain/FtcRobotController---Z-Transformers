@@ -18,12 +18,14 @@ import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -48,6 +50,8 @@ import java.util.Objects;
  * Pressing B/O (Xbox/PS4) will cede control back to the tuning process.
  */
 @Config
+@Disabled
+
 @Autonomous(group = "drive")
 public class ManualFeedforwardTuner extends LinearOpMode {
     private DcMotorEx motorArm;
@@ -111,7 +115,8 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
         while (!isStopRequested()) {
             telemetry.addData("mode", mode);
-
+            scooper.setPosition(0.4);
+            setliftpos(150, 0.3);
             switch (mode) {
                 case TUNING_MODE:
                     if (gamepad1.y) {
@@ -164,5 +169,23 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
             telemetry.update();
         }
+    }
+    public void setliftpos(int armTarget, double speed) {
+        armPos = armTarget;
+
+        // validate armPos is within Min and Max
+        armPos = Range.clip(armPos, armPosMin, armPosMax);
+
+
+        motorArm.setTargetPosition(armPos);
+
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorArm.setPower(speed);
+        while (opModeIsActive() && motorArm.isBusy()) {
+            idle();
+
+        }
+
     }
 }

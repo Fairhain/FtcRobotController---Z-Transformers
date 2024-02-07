@@ -5,9 +5,14 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -23,15 +28,26 @@ import java.util.Objects;
  */
 
 @Config
+@Disabled
+
 @Autonomous(group = "drive")
 public class MaxAngularVeloTuner extends LinearOpMode {
-    public static double RUNTIME = 4.0;
-
+    public static double RUNTIME = 10.0;
+    private DcMotorEx motorArm;
+    private int armPos, armPosMin, armPosMax;
+    private Servo scooper;
     private ElapsedTime timer;
     private double maxAngVelocity = 0.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        armPos = 0;
+        armPosMax = 4260;
+        armPosMin = 0;
+        motorArm = hardwareMap.get(DcMotorEx.class, "motorArm");
+        motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorArm.setDirection(DcMotorSimple.Direction.FORWARD);
+        scooper = hardwareMap.servo.get("scooper");
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -53,6 +69,8 @@ public class MaxAngularVeloTuner extends LinearOpMode {
         timer = new ElapsedTime();
 
         while (!isStopRequested() && timer.seconds() < RUNTIME) {
+            scooper.setPosition(0.4);
+            setliftpos(150, 0.3);
             drive.updatePoseEstimate();
 
             Pose2d poseVelo = Objects.requireNonNull(drive.getPoseVelocity(), "poseVelocity() must not be null. Ensure that the getWheelVelocities() method has been overridden in your localizer.");
@@ -69,5 +87,23 @@ public class MaxAngularVeloTuner extends LinearOpMode {
         telemetry.update();
 
         while (!isStopRequested()) idle();
+    }
+    public void setliftpos(int armTarget, double speed) {
+        armPos = armTarget;
+
+        // validate armPos is within Min and Max
+        armPos = Range.clip(armPos, armPosMin, armPosMax);
+
+
+        motorArm.setTargetPosition(armPos);
+
+        motorArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorArm.setPower(speed);
+        while (opModeIsActive() && motorArm.isBusy()) {
+            idle();
+
+        }
+
     }
 }
