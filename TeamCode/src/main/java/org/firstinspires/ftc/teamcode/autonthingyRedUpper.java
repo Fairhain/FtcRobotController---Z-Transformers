@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -65,9 +69,12 @@ public class autonthingyRedUpper extends LinearOpMode {
     // Calculate the distance using the formula
     public static final double objectWidthInRealWorldUnits = 3.75;  // Replace with the actual width of the object in real-world units
     public static final double focalLength = 728;  // Replace with the focal length of the camera in pixels
-
+    private Servo autonServo2;
     @Override
     public void runOpMode() {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
+        drive.setPoseEstimate(startPose);
         armPos = 0;
         armPosMax = 4260;
         armPosMin = 0;
@@ -80,24 +87,12 @@ public class autonthingyRedUpper extends LinearOpMode {
         motorArm = hardwareMap.dcMotor.get("motorArm");
         scooper = hardwareMap.servo.get("scooper");
         autonServo = hardwareMap.servo.get("autonServo");
+        autonServo2 = hardwareMap.servo.get("autonServo2");
 
-        motorFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorBackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorBackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorFrontRight.setDirection(DcMotor.Direction.FORWARD);
-        motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorBackRight.setDirection(DcMotor.Direction.FORWARD);
         motorArm.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // "Zero Power Behavior Brake" stops the wheels from drifting when you have already stopped putting power.
-        motorBackRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorBackLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorFrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorFrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         initOpenCV();
 
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -107,11 +102,38 @@ public class autonthingyRedUpper extends LinearOpMode {
         telemetry.setMsTransmissionInterval(50);
 
 
+
+        Trajectory leftPurple = drive.trajectoryBuilder(startPose)
+                .splineTo(new Vector2d(27, 0), 0)
+                .build();
+        Trajectory leftToWall = drive.trajectoryBuilder(leftPurple.end().plus(new Pose2d(0, 0, Math.toRadians(90))), true)
+                .splineTo(new Vector2d(30, -37), Math.toRadians(-90))
+                .build();
+
+
+        Trajectory centerPurple = drive.trajectoryBuilder(startPose)
+                .splineTo(new Vector2d(27, 2), 0)
+                .build();
+        Trajectory centerStrafe = drive.trajectoryBuilder(centerPurple.end())
+                .strafeRight(5)
+                .build();
+        Trajectory centerToWall = drive.trajectoryBuilder(centerStrafe.end(), true)
+                .splineTo(new Vector2d(20, -41), Math.toRadians(-90))
+                .build();
+
+
+        Trajectory rightPurple = drive.trajectoryBuilder(startPose)
+                .splineTo(new Vector2d(25, -25), 0)
+                .build();
+        Trajectory rightToWall = drive.trajectoryBuilder(rightPurple.end().plus(new Pose2d(0, 0, Math.toRadians(90))), true)
+                .splineTo(new Vector2d(17, -37), Math.toRadians(-90))
+                .build();
+
         while (!isStarted() && !isStopRequested()) {
 
 
-            //autonServo.setPosition(0.9);
 
+            autonServo2.setPosition(0.8);
             scooper.setPosition(0.4);
             telemetry.addLine("Coordinate" + "(" + (int) cX + ", " + (int) cY + ")");
             telemetry.addLine("Distance in Inch" + (getDistance(width)));
@@ -140,174 +162,49 @@ public class autonthingyRedUpper extends LinearOpMode {
         telemetry.update();
         telemetry.addData("Side", side);
         telemetry.update();
-        autonServo.setPosition(0.5);
+        setliftpos(150, 0.3);
+        autonServo.setPosition(0.4);
         scooper.setPosition(0.3);
 
 
         if (side.equals("left")) {
-            strafeLeft(50,50,0.3);
-            driveForward(1025, 1025, 0.3);
-            driveForward(-960, 960, 0.3);
-
-            //place pixel here
-            autonServo.setPosition(0.9);
+            drive.followTrajectory(leftPurple);
+            drive.turn(Math.toRadians(90));
+            autonServo.setPosition(1);
             sleep(1000);
             autonServo.setPosition(0.5);
-            driveForward(-1000, -1000, 0.3);
-            strafeRight(310, 310, 0.3);
-            driveForward(-1000, -1000, 0.3);
-            setliftpos(1175, 0.3);
+            drive.followTrajectory(leftToWall);
+            drive.turn(Math.toRadians(180));
+            autonServo2.setPosition(0);
             sleep(1000);
-            setliftpos(150, 0.3);
-            driveForward(100, 100, 0.3);
-            strafeLeft(1000, 1000, 0.3);
-            driveForward(-500, -500, 0.3);
+            autonServo2.setPosition(0.7);
         } else if (side.equals("right")) {
-
-
-
-            strafeRight(1200, 1200, 0.3);
-            driveForward(1000, 1000, 0.3);
-            driveForward(-1000, 1000, 0.3);
-
-            autonServo.setPosition(0.9);
+            drive.followTrajectory(rightPurple);
+            drive.turn(Math.toRadians(90));
+            autonServo.setPosition(1);
             sleep(1000);
             autonServo.setPosition(0.5);
-            //place pixel here
-            strafeLeft(100,100, 0.5);
-            driveForward(-1200, -1200, 0.3); //If this doesn't work try 920
-
-
-            setliftpos(1175, 0.2);
+            drive.followTrajectory(rightToWall);
+            drive.turn(Math.toRadians(180));
+            autonServo2.setPosition(0);
             sleep(1000);
-            setliftpos(150, 0.3);
-            driveForward(100, 100, 0.3);
-            strafeLeft(1000, 1000, 0.3);
-            driveForward(-500, -500, 0.3);
+            autonServo2.setPosition(0.7);
         } else {
-            strafeLeft(150, 150, 0.3);
-            driveForward(1400, 1400, 0.3);
-            //place pixel here
-            autonServo.setPosition(0.9);
+            drive.followTrajectory(centerPurple);
+            autonServo.setPosition(1);
             sleep(1000);
             autonServo.setPosition(0.5);
-            driveForward(-950, 950, 0.3);
-            driveForward(-1000, -1000, 0.3);
-            strafeLeft(200,200,0.3);
-            driveForward(-1000, -1000, 0.3);
-            setliftpos(1175, 0.3);
+            drive.followTrajectory(centerStrafe);
+            drive.followTrajectory(centerToWall);
+            drive.turn(Math.toRadians(180));
+            autonServo2.setPosition(0);
             sleep(1000);
-            setliftpos(150, 0.3);
-            driveForward(100, 100, 0.3);
-            strafeLeft(1000, 1000, 0.3);
-            driveForward(-500, -500, 0.3);
+            autonServo2.setPosition(0.7);
         }
 
         // Release resources
         controlHubCam.stopStreaming();
     }
-    public void strafeLeft(int mltarget, int mrtarget, double speed) {
-        // to reverse set the position as negative value for left front motor
-        LmT += -mltarget;
-        RmT += mrtarget;
-        LbmT += mltarget;
-        // to reverse set the position as negative value for right back motor
-        RbmT += -mrtarget;
-
-        motorFrontLeft.setTargetPosition(LmT);
-        motorFrontRight.setTargetPosition(RmT);
-        motorBackLeft.setTargetPosition(LbmT);
-        motorBackRight.setTargetPosition(RbmT);
-
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        motorFrontLeft.setPower(speed);
-        motorFrontRight.setPower(speed);
-        motorBackRight.setPower(speed);
-        motorBackLeft.setPower(speed);
-
-        while (opModeIsActive() && motorFrontLeft.isBusy() && motorFrontRight.isBusy() &&
-                motorBackLeft.isBusy() && motorBackRight.isBusy()) {
-
-        }
-
-        motorFrontLeft.setPower(0);
-        motorFrontRight.setPower(0);
-        motorBackRight.setPower(0);
-        motorBackLeft.setPower(0);
-    }
-    public void strafeRight(int mltarget, int mrtarget, double speed) {
-        LmT += mltarget;
-        // to reverse set the position as negative value for right front motor
-        RmT += -mrtarget;
-        // to reverse set the position as negative value for left back motor
-        LbmT += -mrtarget;
-        RbmT += mltarget;
-
-        motorFrontLeft.setTargetPosition(LmT);
-        motorFrontRight.setTargetPosition(RmT);
-        motorBackLeft.setTargetPosition(LbmT);
-        motorBackRight.setTargetPosition(RbmT);
-
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        motorFrontLeft.setPower(speed);
-        motorFrontRight.setPower(speed);
-        motorBackRight.setPower(speed);
-        motorBackLeft.setPower(speed);
-
-        while (opModeIsActive() && motorFrontLeft.isBusy() && motorFrontRight.isBusy() &&
-                motorBackLeft.isBusy() && motorBackRight.isBusy()) {
-
-        }
-
-        motorFrontLeft.setPower(0);
-        motorFrontRight.setPower(0);
-        motorBackRight.setPower(0);
-        motorBackLeft.setPower(0);
-    }
-    public void driveForward(int mltarget, int mrtarget, double speed) {
-        LmT += mltarget;
-        RmT += mrtarget;
-        LbmT += mltarget;
-        RbmT += mrtarget;
-
-        motorFrontLeft.setTargetPosition(LmT);
-        motorFrontRight.setTargetPosition(RmT);
-        motorBackLeft.setTargetPosition(LbmT);
-        motorBackRight.setTargetPosition(RbmT);
-
-        motorFrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorFrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorBackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        motorFrontLeft.setPower(speed);
-        motorFrontRight.setPower(speed);
-        motorBackRight.setPower(speed);
-        motorBackLeft.setPower(speed);
-        while (opModeIsActive() && motorFrontLeft.isBusy() && motorFrontRight.isBusy() &&
-                motorBackLeft.isBusy() && motorBackRight.isBusy()) {
-            idle();
-        }
-        motorFrontLeft.setPower(0);
-        motorFrontRight.setPower(0);
-        motorBackRight.setPower(0);
-        motorBackLeft.setPower(0);
-
-
-    }
-
-
-
-
-
     private void initOpenCV() {
 
         // Create an instance of the camera
@@ -424,30 +321,8 @@ public class autonthingyRedUpper extends LinearOpMode {
         double midpoint = -((objMidpoint - (CAMERA_WIDTH/2))*FOV)/CAMERA_WIDTH;
         return midpoint;
     }
-    private static double getDistance(double width){
+    private static double getDistance(double width) {
         double distance = (objectWidthInRealWorldUnits * focalLength) / width;
         return distance;
     }
-    public double PIDControl(double refrence, double state) {
-        double error = angleWrap(refrence - state);
-        telemetry.addData("Error: ", error);
-        integralSum += error * timer.seconds();
-        double derivative = (error - lastError) / (timer.seconds());
-        lastError = error;
-        timer.reset();
-        double output = (error * Kp) + (derivative * Kd) + (integralSum * Ki);
-        return output;
-    }
-    public double angleWrap(double radians){
-        while(radians > Math.PI){
-            radians -= 2 * Math.PI;
-        }
-        while(radians < -Math.PI){
-            radians += 2 * Math.PI;
-        }
-        return radians;
-    }
-
-
-
 }

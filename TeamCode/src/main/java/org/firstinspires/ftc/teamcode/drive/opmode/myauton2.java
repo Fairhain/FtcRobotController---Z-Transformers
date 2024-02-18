@@ -13,9 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
 @Config
 @Autonomous
-public class myauton extends LinearOpMode {
+@Disabled
+public class myauton2 extends LinearOpMode {
     private int armPos, armPosMin, armPosMax;
     private DcMotorEx motorArm;
     private Servo autonServo;
@@ -39,24 +41,26 @@ public class myauton extends LinearOpMode {
         Pose2d startPose = new Pose2d(0, 0, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
-        Trajectory rightPurple = drive.trajectoryBuilder(startPose)
-                .splineTo(new Vector2d(36, 0), 0)
+        Trajectory centerPurple = drive.trajectoryBuilder(startPose)
+                .splineTo(new Vector2d(26, 2), 0)
                 .build();
-        Trajectory rightToWall = drive.trajectoryBuilder(rightPurple.end().plus(new Pose2d(0, 0, Math.toRadians(90))), true)
-                .splineTo(new Vector2d(30, 29), Math.toRadians(-90))
+        Trajectory centerwall = drive.trajectoryBuilder(centerPurple.end(), true)
+                .back(3)
+                .splineTo(new Vector2d(31, 40), 0)
                 .build();
-
         waitForStart();
+
 
         if(isStopRequested()) return;
 
-        drive.followTrajectory(rightPurple);
-        drive.turn(Math.toRadians(-90));
-        autonServo.setPosition(1);
+        drive.followTrajectory(centerPurple);
+        autonServo.setPosition(0.9);
         sleep(1000);
         autonServo.setPosition(0.5);
-        drive.followTrajectory(rightToWall);
-        drive.turn(Math.toRadians(180));
+        drive.followTrajectory(centerwall);
+        sleep(1000);
+        drive.turn(Math.toRadians(-85));
+        sleep(1000);
         autonServo2.setPosition(0);
         sleep(1000);
         autonServo2.setPosition(0.7);
